@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug RunPCL",
+            "program": ".build/debug/RunPCL",
+            "args": [],
+            "cwd": "${workspaceFolder:RunPCL}",
+            "preLaunchTask": "swift: Build Debug RunPCL"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Release RunPCL",
+            "program": ".build/release/RunPCL",
+            "args": [],
+            "cwd": "${workspaceFolder:RunPCL}",
+            "preLaunchTask": "swift: Build Release RunPCL"
+        }
+    ]
+}
