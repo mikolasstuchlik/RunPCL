@@ -6,7 +6,7 @@ import PackageDescription
 /// Location of the PCL repository
 let pclRoot = "/Users/mikolasstuchlik/Developer/pcl"
 /// Location of the build folder
-let pclBuildRoot = "/Users/mikolasstuchlik/Developer/pcl/build"
+let pclBuildRoot = "/Users/mikolasstuchlik/Developer/pcl/build_dy"
 
 // Include paths for homebrew repositories differ based on the architecture
 let m1libIncludePath = "/opt/homebrew/Cellar"
@@ -32,10 +32,6 @@ let binaryPath = x86libBinaryPath
 let llvmIncludePath = x86llvmIncludePath
 let llvmBinaryPath = x86llvmBinaryPath
 #endif
-
-// Dynamically linked PCL via SPM:
-// https://dev.my-gate.net/2021/08/04/understanding-rpath-with-cmake/
-// swift run -Xlinker -rpath -Xlinker {pclBuildRoot}/lib
 
 // Statically linked:
 // https://www.positioniseverything.net/clang-error-unsupported-option-fopenmp/ 
@@ -80,6 +76,11 @@ let package = Package(
                 "-L\(binaryPath)/flann/1.9.1_13/lib",
                 "-L\(pclBuildRoot)/lib",
                 "-L\(llvmBinaryPath)",
+                // Manual (man rd):
+                //-rpath path
+                // Add path to the runpath search path list for image being created.  At runtime, dyld uses the runpath when searching for
+                // dylibs whose load path begins with @rpath/. 
+                "-Xlinker", "-rpath", "-Xlinker", "\(pclBuildRoot)/lib",
                 // Comment:
                 // -l<library>
                 // You can either provide full paths to libraries, or use this command to find library of the provided name

@@ -103,13 +103,7 @@ It modify `pclRoot` and `pclBuildRoot` variables in the `Package.swift` to corre
 
 **DO NOT FORGET** to check, that the versions of the libraries installed via `brew` correspond to the versions in `Package.swift`.
 
-If you link PCL dynamically, build and run it via
-```bash
-swift run -Xlinker -rpath -Xlinker {pclBuildRoot}/lib
-```
-where the `{pclBuildRoot}` is replaced by corresponding path.
-
-In case you link PCL statically, just use 
+In order to run the project, just use
 ```bash
 swift run
 ```
