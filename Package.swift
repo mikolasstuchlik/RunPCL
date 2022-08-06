@@ -3,26 +3,47 @@
 
 import PackageDescription
 
+/// Location of the PCL repository
 let pclRoot = "/Users/mikolasstuchlik/Developer/pcl"
-let pclBuildRoot = "/Users/mikolasstuchlik/Developer/pcl/build_dy"
+/// Location of the build folder
+let pclBuildRoot = "/Users/mikolasstuchlik/Developer/pcl/build"
 
+// Include paths for homebrew repositories differ based on the architecture
 let m1libIncludePath = "/opt/homebrew/Cellar"
 let x86libIncludePath = "/usr/local/Cellar"
+
+let m1llvmIncludePath = "/opt/homebrew/opt/llvm/include"
+let x86llvmIncludePath = "/opt/homebrew/opt/llvm/include" // check via `$ brew info llvm`
 
 let m1libBinaryPath = "/opt/homebrew/Cellar"
 let x86libBinaryPath = "/usr/local/Cellar"
 
+let m1llvmBinaryPath = "/opt/homebrew/opt/llvm/lib"
+let x86llvmBinaryPath = "/opt/homebrew/opt/llvm/lib" // check via `$ brew info llvm`
 
 #if arch(arm64)
 let includePath = m1libIncludePath
 let binaryPath = m1libBinaryPath
+let llvmIncludePath = m1llvmIncludePath
+let llvmBinaryPath = m1llvmBinaryPath
 #else
 let includePath = x86libIncludePath
 let binaryPath = x86libBinaryPath
+let llvmIncludePath = x86llvmIncludePath
+let llvmBinaryPath = x86llvmBinaryPath
 #endif
 
+// Dynamically linked PCL via SPM:
 // https://dev.my-gate.net/2021/08/04/understanding-rpath-with-cmake/
 // swift run -Xlinker -rpath -Xlinker {pclBuildRoot}/lib
+
+// Statically linked:
+// https://www.positioniseverything.net/clang-error-unsupported-option-fopenmp/ 
+// You need to install LLVM as described in `– Linker Errors After Compilation`
+
+// You can use `$ swift package generate-xcodeproj` in order to generate Xcode project
+// The advantage of this is, that the SourceKit works, since it can find all the deader files.
+// The disadvantage is, that Bundle.module won't work, you need to add resources in different way.
 
 let package = Package(
     name: "RunPCL",
@@ -40,12 +61,13 @@ let package = Package(
                 "-I\(includePath)/eigen/3.4.0_1/include/eigen3",
                 "-I\(includePath)/flann/1.9.1_13/include",
                 "-I\(pclRoot)/common/include",
-				"-I\(pclRoot)/io/include",
-				"-I\(pclRoot)/build/include",
-				"-I\(pclRoot)/kdtree/include",
-				"-I\(pclRoot)/features/include",
-				"-I\(pclRoot)/surface/include",
-				"-I\(pclRoot)/search/include",
+                "-I\(pclRoot)/io/include",
+                "-I\(pclRoot)/build/include",
+                "-I\(pclRoot)/kdtree/include",
+                "-I\(pclRoot)/features/include",
+                "-I\(pclRoot)/surface/include",
+                "-I\(pclRoot)/search/include",
+                "-I\(llvmIncludePath)"
             ])],
             // All symbols that were used have to be defined.
             // The linker needs to know, where to search for your definitions
@@ -57,6 +79,7 @@ let package = Package(
                 "-L\(binaryPath)/boost/1.79.0_1/lib",
                 "-L\(binaryPath)/flann/1.9.1_13/lib",
                 "-L\(pclBuildRoot)/lib",
+                "-L\(llvmBinaryPath)",
                 // Comment:
                 // -l<library>
                 // You can either provide full paths to libraries, or use this command to find library of the provided name
@@ -65,9 +88,15 @@ let package = Package(
                 // Suppose you want to link library named Miki. Then provide additional flag `-lMiki`. The linker will then search
                 // for library named `libMiki.dylib` (dynamic library) or `libMiki.a` (static library).
                 // Notice, that it is not explicitly defined whether static or dynamic library is used.
-                "-lpcl_io",
+                "-lomp",
+                "-lflann",
+                "-lflann_cpp",
                 "-lboost_prg_exec_monitor-mt",
+                "-lboost_filesystem",
+                "-lpcl_io_ply",
+                "-lpcl_io",
                 "-lpcl_octree",
+                "-lpcl_kdtree",
                 "-lpcl_features",
                 "-lpcl_surface",
                 "-lpcl_search",
@@ -84,46 +113,3 @@ let package = Package(
     ],
     cxxLanguageStandard: .cxx17
 )
-
-// Make static
-// cmake \
-// -D BUILD_surface_on_nurbs:BOOL=ON \
-// -D CMAKE_BUILD_TYPE:STRING=Release \
-// -D CMAKE_CXX_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer -march=native" \
-// -D CMAKE_C_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG  -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer -march=native" \
-// -D PCL_SHARED_LIBS=OFF \
-// -D PCL_FLANN_REQUIRED_TYPE:STRING=STATIC \
-// -D PCL_QHULL_REQUIRED_TYPE:STRING=STATIC \
-// ..
-
-// Make dynamic
-// cmake \
-// -D BUILD_surface_on_nurbs:BOOL=ON \
-// -D CMAKE_BUILD_TYPE:STRING=Release \
-// -D CMAKE_CXX_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer -march=native" \
-// -D CMAKE_C_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG  -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer -march=native" \
-// ..
-
-// Arm
-// Make static
-// cmake \
-// -D BUILD_surface_on_nurbs:BOOL=ON \
-// -D CMAKE_BUILD_TYPE:STRING=Release \
-// -D CMAKE_CXX_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer" \
-// -D CMAKE_C_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG  -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer" \
-// -D PCL_SHARED_LIBS=OFF \
-// -D PCL_FLANN_REQUIRED_TYPE:STRING=STATIC \
-// -D PCL_QHULL_REQUIRED_TYPE:STRING=STATIC \
-// ..
-
-// Make dynamic
-// cmake \
-// -D BUILD_surface_on_nurbs:BOOL=ON \
-// -D CMAKE_BUILD_TYPE:STRING=Release \
-// -D CMAKE_CXX_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer" \
-// -D CMAKE_C_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG  -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer" \
-// ..
-
-// Will generate dot files upon cmake generation.
-// Use graphviz to generate jpg: $ dot -Tjpg dep.graph > out.jpg
-// --graphviz=dep.graph
