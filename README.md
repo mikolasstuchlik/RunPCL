@@ -101,6 +101,8 @@ It modify `pclRoot` and `pclBuildRoot` variables in the `Package.swift` to corre
 
 **Warning** the `llvm` properties were not tested on x86, see comments next to them.
 
+**DO NOT FORGET** to check, that the versions of the libraries installed via `brew` correspond to the versions in `Package.swift`.
+
 If you link PCL dynamically, build and run it via
 ```bash
 swift run -Xlinker -rpath -Xlinker {pclBuildRoot}/lib
