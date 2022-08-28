@@ -22,8 +22,8 @@ Create build folder. Ideally named `build_dy` for dynamic library and `build_a` 
 cmake \
 -D BUILD_surface_on_nurbs:BOOL=ON \
 -D CMAKE_BUILD_TYPE:STRING=Release \
--D CMAKE_CXX_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer -march=native" \
--D CMAKE_C_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG  -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer -march=native" \
+-D CMAKE_CXX_FLAGS_RELEASE:STRING="-DNDEBUG -Ofast -funroll-loops -ftree-vectorize -fomit-frame-pointer -flto -fstrict-vtable-pointers -fwhole-program-vtables -fforce-emit-vtables -march=native" \
+-D CMAKE_C_FLAGS_RELEASE:STRING="-DNDEBUG -Ofast -funroll-loops -ftree-vectorize -fomit-frame-pointer -flto -march=native" \
 -D PCL_SHARED_LIBS=OFF \
 -D PCL_FLANN_REQUIRED_TYPE:STRING=STATIC \
 -D PCL_QHULL_REQUIRED_TYPE:STRING=STATIC \
@@ -35,8 +35,8 @@ cmake \
 cmake \
 -D BUILD_surface_on_nurbs:BOOL=ON \
 -D CMAKE_BUILD_TYPE:STRING=Release \
--D CMAKE_CXX_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer -march=native" \
--D CMAKE_C_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG  -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer -march=native" \
+-D CMAKE_CXX_FLAGS_RELEASE:STRING="-DNDEBUG -Ofast -funroll-loops -ftree-vectorize -fomit-frame-pointer -flto -fstrict-vtable-pointers -fwhole-program-vtables -fforce-emit-vtables -march=native" \
+-D CMAKE_C_FLAGS_RELEASE:STRING="-DNDEBUG -Ofast -funroll-loops -ftree-vectorize -fomit-frame-pointer -flto -march=native" \
 ..
 ```
 
@@ -45,8 +45,8 @@ cmake \
 cmake \
 -D BUILD_surface_on_nurbs:BOOL=ON \
 -D CMAKE_BUILD_TYPE:STRING=Release \
--D CMAKE_CXX_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer" \
--D CMAKE_C_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG  -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer" \
+-D CMAKE_CXX_FLAGS_RELEASE:STRING="-DNDEBUG -Ofast -funroll-loops -ftree-vectorize -fomit-frame-pointer -flto -fstrict-vtable-pointers -fwhole-program-vtables -fforce-emit-vtables" \
+-D CMAKE_C_FLAGS_RELEASE:STRING="-DNDEBUG -Ofast -funroll-loops -ftree-vectorize -fomit-frame-pointer -flto" \
 -D PCL_SHARED_LIBS=OFF \
 -D PCL_FLANN_REQUIRED_TYPE:STRING=STATIC \
 -D PCL_QHULL_REQUIRED_TYPE:STRING=STATIC \
@@ -58,8 +58,8 @@ cmake \
 cmake \
 -D BUILD_surface_on_nurbs:BOOL=ON \
 -D CMAKE_BUILD_TYPE:STRING=Release \
--D CMAKE_CXX_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer" \
--D CMAKE_C_FLAGS_RELEASE:STRING="-Ofast -DNDEBUG  -funroll-loops -fno-strict-aliasing -ftree-vectorize -fomit-frame-pointer" \
+-D CMAKE_CXX_FLAGS_RELEASE:STRING="-DNDEBUG -Ofast -funroll-loops -ftree-vectorize -fomit-frame-pointer -flto -fstrict-vtable-pointers -fwhole-program-vtables -fforce-emit-vtables" \
+-D CMAKE_C_FLAGS_RELEASE:STRING="-DNDEBUG -Ofast -funroll-loops -ftree-vectorize -fomit-frame-pointer -flto" \
 ..
 ```
 
@@ -89,6 +89,16 @@ Add following command to the cmake (in the same manned ar graphviz)
 ```bash
 -DBUILD_examples=ON
 ```
+
+### Troubleshooting:
+
+**Build failed: no library found for `-lzstd`**
+
+ - Double-check your `zstd` is installed via `$ brew info zstd` and reinstall it via `$ brew reinstall zstd`
+ - Find the path to the library using `$ pkg-config --libs libzstd` (the first result should be path to the lib directory)
+ - Add folloving line to your `cmake` command: `-D CMAKE_EXE_LINKER_FLAGS="-L/opt/homebrew/Cellar/zstd/1.5.2/lib" \` (the path has the be the resul of the `pkg-config`)
+
+
 ## Compilation and linking:
 Use make to compile and link the library. Specify the number of threads you want to use (this will speed up the process significantly):
 ```bash
